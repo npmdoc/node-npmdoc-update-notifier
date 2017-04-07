@@ -2,11 +2,11 @@
 <rect height="1934" fill="#555" width="720"></rect>
 <text fill="#7f7" font-family="Courier New" font-size="12" xml:space="preserve">
 <tspan x="10" y="26"></tspan>
-<tspan x="10" y="42">&gt; npmdoc-update-notifier@0.0.1 test /home/travis/build/npmdoc/node-npmdoc-update-notifier</tspan>
+<tspan x="10" y="42">&gt; npmdoc-update-notifier@0.0.2 test /home/travis/build/npmdoc/node-npmdoc-update-notifier</tspan>
 <tspan x="10" y="58">&gt; (set -e; export PORT=$(utility2 shServerPortRandom); utility2 test test.js)</tspan>
 <tspan x="10" y="74"></tspan>
 <tspan x="10" y="90"></tspan>
-<tspan x="10" y="106">[MODE_BUILD=npmTest] - 2017-04-07T20:38:14Z - npm-testing /home/travis/build/npmdoc/node-npmdoc-\</tspan>
+<tspan x="10" y="106">[MODE_BUILD=npmTest] - 2017-04-07T20:39:48Z - npm-testing /home/travis/build/npmdoc/node-npmdoc-\</tspan>
 <tspan x="10" y="122">update-notifier</tspan>
 <tspan x="10" y="138"></tspan>
 <tspan x="10" y="154"></tspan>
@@ -14,83 +14,83 @@
 <tspan x="10" y="186">c-update-notifier/test.js</tspan>
 <tspan x="10" y="202">merging file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-report.json \</tspan>
 <tspan x="10" y="218">to test-report</tspan>
-<tspan x="10" y="234">&gt; server listening on http-port 38507</tspan>
+<tspan x="10" y="234">&gt; server listening on http-port 42283</tspan>
 <tspan x="10" y="250">created apidoc file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/apidoc.htm\</tspan>
 <tspan x="10" y="266">l</tspan>
 <tspan x="10" y="282"></tspan>
 <tspan x="10" y="298"></tspan>
 <tspan x="10" y="314">browserTest - created electron entry-page /home/travis/build/npmdoc/node-npmdoc-update-notifier/\</tspan>
-<tspan x="10" y="330">tmp/electron.15b4a238bfe0.382433790bd64.html</tspan>
+<tspan x="10" y="330">tmp/electron.15b4a24fb470.c1ce9c3cfa9b8.html</tspan>
 <tspan x="10" y="346"></tspan>
 <tspan x="10" y="362">[node test-case 1 of 6 passed] - testCase_buildLib_default</tspan>
 <tspan x="10" y="378">[node test-case 2 of 6 passed] - testCase_buildReadme_default</tspan>
 <tspan x="10" y="394">[node test-case 3 of 6 passed] - testCase_buildTest_default</tspan>
 <tspan x="10" y="410"></tspan>
 <tspan x="10" y="426">browserTest - created electron entry-page /home/travis/build/npmdoc/node-npmdoc-update-notifier/\</tspan>
-<tspan x="10" y="442">tmp/electron.15b4a238c290.4c55a953b4ea1.html</tspan>
+<tspan x="10" y="442">tmp/electron.15b4a24fb8c0.435d5d3619aab.html</tspan>
 <tspan x="10" y="458"></tspan>
 <tspan x="10" y="474">Xlib:  extension "RANDR" missing on display ":99.0".</tspan>
 <tspan x="10" y="490">Xlib:  extension "RANDR" missing on display ":99.0".</tspan>
-<tspan x="10" y="506">merging file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-report.json \</tspan>
-<tspan x="10" y="522">to test-report</tspan>
-<tspan x="10" y="538">merging file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-report.json \</tspan>
-<tspan x="10" y="554">to test-report</tspan>
-<tspan x="10" y="570">Xlib:  extension "RANDR" missing on display ":99.0".</tspan>
-<tspan x="10" y="586">&gt; [4765:0407/203816:WARNING:audio_manager.cc(314)] Multiple instances of AudioManager detected</tspan>
-<tspan x="10" y="602">[4765:0407/203816:WARNING:audio_manager.cc(275)] Multiple instances of AudioManager detected</tspan>
-<tspan x="10" y="618">server listening on http-port 34753</tspan>
+<tspan x="10" y="506">&gt; server listening on http-port 33951</tspan>
+<tspan x="10" y="522">merging file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-report.json \</tspan>
+<tspan x="10" y="538">to test-report</tspan>
+<tspan x="10" y="554">Xlib:  extension "RANDR" missing on display ":99.0".</tspan>
+<tspan x="10" y="570">merging file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-report.json \</tspan>
+<tspan x="10" y="586">to test-report</tspan>
+<tspan x="10" y="602">[5667:0407/203950:WARNING:audio_manager.cc(314)] Multiple instances of AudioManager detected</tspan>
+<tspan x="10" y="618">[5667:0407/203950:WARNING:audio_manager.cc(275)] Multiple instances of AudioManager detected</tspan>
 <tspan x="10" y="634">Xlib:  extension "RANDR" missing on display ":99.0".</tspan>
-<tspan x="10" y="650">[4762:0407/203816:WARNING:audio_manager.cc(314)] Multiple instances of AudioManager detected</tspan>
-<tspan x="10" y="666">[4762:0407/203816:WARNING:audio_manager.cc(275)] Multiple instances of AudioManager detected</tspan>
-<tspan x="10" y="682">[4797:0407/203816:ERROR:sandbox_linux.cc(343)] InitializeSandbox() called with multiple threads \</tspan>
+<tspan x="10" y="650">[5663:0407/203950:WARNING:audio_manager.cc(314)] Multiple instances of AudioManager detected</tspan>
+<tspan x="10" y="666">[5663:0407/203950:WARNING:audio_manager.cc(275)] Multiple instances of AudioManager detected</tspan>
+<tspan x="10" y="682">[5701:0407/203950:ERROR:sandbox_linux.cc(343)] InitializeSandbox() called with multiple threads \</tspan>
 <tspan x="10" y="698">in process gpu-process. </tspan>
-<tspan x="10" y="714">[4816:0407/203816:ERROR:sandbox_linux.cc(343)] InitializeSandbox() called with multiple threads \</tspan>
+<tspan x="10" y="714">[5721:0407/203950:ERROR:sandbox_linux.cc(343)] InitializeSandbox() called with multiple threads \</tspan>
 <tspan x="10" y="730">in process gpu-process. </tspan>
-<tspan x="10" y="746">[4765:0407/203816:ERROR:browser_gpu_channel_host_factory.cc(131)] Failed to create channel.</tspan>
-<tspan x="10" y="762">[4762:0407/203816:ERROR:browser_gpu_channel_host_factory.cc(131)] Failed to create channel.</tspan>
+<tspan x="10" y="746">[5667:0407/203950:ERROR:browser_gpu_channel_host_factory.cc(131)] Failed to create channel.</tspan>
+<tspan x="10" y="762">[5663:0407/203950:ERROR:browser_gpu_channel_host_factory.cc(131)] Failed to create channel.</tspan>
 <tspan x="10" y="778"></tspan>
-<tspan x="10" y="794">browserTest - opened url /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/apidoc.\</tspan>
-<tspan x="10" y="810">html</tspan>
+<tspan x="10" y="794">browserTest - opened url http://127.0.0.1:42283?modeTest=1</tspan>
+<tspan x="10" y="810"></tspan>
 <tspan x="10" y="826"></tspan>
-<tspan x="10" y="842"></tspan>
-<tspan x="10" y="858">browserTest - opened url http://127.0.0.1:38507?modeTest=1</tspan>
+<tspan x="10" y="842">browserTest - opened url /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/apidoc.\</tspan>
+<tspan x="10" y="858">html</tspan>
 <tspan x="10" y="874"></tspan>
-<tspan x="10" y="890">[4765:0407/203818:INFO:CONSOLE(249)] "----------|-----------|-----------|-----------|-----------\</tspan>
+<tspan x="10" y="890">[5667:0407/203952:INFO:CONSOLE(249)] "----------|-----------|-----------|-----------|-----------\</tspan>
 <tspan x="10" y="906">|</tspan>
 <tspan x="10" y="922">File      |   % Stmts |% Branches |   % Funcs |   % Lines |</tspan>
 <tspan x="10" y="938">----------|-----------|-----------|-----------|-----------|</tspan>
 <tspan x="10" y="954">----------|-----------|-----------|-----------|-----------|</tspan>
 <tspan x="10" y="970">All files |       100 |       100 |       100 |       100 |</tspan>
 <tspan x="10" y="986">----------|-----------|-----------|-----------|-----------|</tspan>
-<tspan x="10" y="1002">", source: file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/electron.15b4a238c29\</tspan>
-<tspan x="10" y="1018">0.4c55a953b4ea1.html (249)</tspan>
-<tspan x="10" y="1034">[4765:0407/203818:INFO:CONSOLE(249)] "created coverage file:///tmp/build/coverage.html/index.htm\</tspan>
-<tspan x="10" y="1050">l", source: file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/electron.15b4a238c2\</tspan>
-<tspan x="10" y="1066">90.4c55a953b4ea1.html (249)</tspan>
+<tspan x="10" y="1002">", source: file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/electron.15b4a24fb8c\</tspan>
+<tspan x="10" y="1018">0.435d5d3619aab.html (249)</tspan>
+<tspan x="10" y="1034">[5667:0407/203952:INFO:CONSOLE(249)] "created coverage file:///tmp/build/coverage.html/index.htm\</tspan>
+<tspan x="10" y="1050">l", source: file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/electron.15b4a24fb8\</tspan>
+<tspan x="10" y="1066">c0.435d5d3619aab.html (249)</tspan>
 <tspan x="10" y="1082">[node test-case 4 of 6 passed] - testCase_buildApp_default</tspan>
 <tspan x="10" y="1098"></tspan>
-<tspan x="10" y="1114">browserTest - exit-code 1 - /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/apid\</tspan>
-<tspan x="10" y="1130">oc.html</tspan>
+<tspan x="10" y="1114">browserTest - created screenCapture file:///home/travis/build/npmdoc/node-npmdoc-update-notifier\</tspan>
+<tspan x="10" y="1130">/tmp/build/screenCapture.%2F.png</tspan>
 <tspan x="10" y="1146"></tspan>
-<tspan x="10" y="1162">[node test-case 5 of 6 passed] - testCase_buildApidoc_default</tspan>
-<tspan x="10" y="1178"></tspan>
-<tspan x="10" y="1194">browserTest - created screenCapture file:///home/travis/build/npmdoc/node-npmdoc-update-notifier\</tspan>
-<tspan x="10" y="1210">/tmp/build/screenCapture.%2F.png</tspan>
+<tspan x="10" y="1162">browserTest - created screenCapture file:///home/travis/build/npmdoc/node-npmdoc-update-notifier\</tspan>
+<tspan x="10" y="1178">/tmp/build/screenCapture.%2F.html</tspan>
+<tspan x="10" y="1194"></tspan>
+<tspan x="10" y="1210">browserTest - exit-code 0 - http://127.0.0.1:42283?modeTest=1</tspan>
 <tspan x="10" y="1226"></tspan>
-<tspan x="10" y="1242">browserTest - created screenCapture file:///home/travis/build/npmdoc/node-npmdoc-update-notifier\</tspan>
-<tspan x="10" y="1258">/tmp/build/screenCapture.%2F.html</tspan>
-<tspan x="10" y="1274"></tspan>
-<tspan x="10" y="1290">browserTest - exit-code 0 - http://127.0.0.1:38507?modeTest=1</tspan>
+<tspan x="10" y="1242"></tspan>
+<tspan x="10" y="1258">browserTest - merged coverage from /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/cov\</tspan>
+<tspan x="10" y="1274">erage.%2F.json</tspan>
+<tspan x="10" y="1290"></tspan>
 <tspan x="10" y="1306"></tspan>
-<tspan x="10" y="1322"></tspan>
-<tspan x="10" y="1338">browserTest - merged coverage from /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/cov\</tspan>
-<tspan x="10" y="1354">erage.%2F.json</tspan>
-<tspan x="10" y="1370"></tspan>
+<tspan x="10" y="1322">browserTest - merging test-report from /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp\</tspan>
+<tspan x="10" y="1338">/test-report.%2F.json</tspan>
+<tspan x="10" y="1354"></tspan>
+<tspan x="10" y="1370">[node test-case 5 of 6 passed] - testCase_webpage_default</tspan>
 <tspan x="10" y="1386"></tspan>
-<tspan x="10" y="1402">browserTest - merging test-report from /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp\</tspan>
-<tspan x="10" y="1418">/test-report.%2F.json</tspan>
+<tspan x="10" y="1402">browserTest - exit-code 1 - /home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/apid\</tspan>
+<tspan x="10" y="1418">oc.html</tspan>
 <tspan x="10" y="1434"></tspan>
-<tspan x="10" y="1450">[node test-case 6 of 6 passed] - testCase_webpage_default</tspan>
+<tspan x="10" y="1450">[node test-case 6 of 6 passed] - testCase_buildApidoc_default</tspan>
 <tspan x="10" y="1466">------------------------------------|-----------|-----------|-----------|-----------|</tspan>
 <tspan x="10" y="1482">File                                |   % Stmts |% Branches |   % Funcs |   % Lines |</tspan>
 <tspan x="10" y="1498">------------------------------------|-----------|-----------|-----------|-----------|</tspan>
@@ -108,8 +108,8 @@
 <tspan x="10" y="1690">to test-report</tspan>
 <tspan x="10" y="1706"></tspan>
 <tspan x="10" y="1722">-------------------------------------------------------</tspan>
-<tspan x="10" y="1738">| test-report - buildNpmdoc - node - linux v6.10.2 - 2017-04-07T20:37:54.172Z</tspan>
-<tspan x="10" y="1754">|   36142 ms            0 failed        6 passed      |</tspan>
+<tspan x="10" y="1738">| test-report - buildNpmdoc - node - linux v6.10.2 - 2017-04-07T20:39:10.132Z</tspan>
+<tspan x="10" y="1754">|   54634 ms            0 failed        6 passed      |</tspan>
 <tspan x="10" y="1770">-------------------------------------------------------</tspan>
 <tspan x="10" y="1786"></tspan>
 <tspan x="10" y="1802">created test-report file:///home/travis/build/npmdoc/node-npmdoc-update-notifier/tmp/build/test-\</tspan>
@@ -119,6 +119,6 @@
 <tspan x="10" y="1866">npmTest - 0 failed tests</tspan>
 <tspan x="10" y="1882"></tspan>
 <tspan x="10" y="1898"></tspan>
-<tspan x="10" y="1914">[MODE_BUILD=npmTest] - 2017-04-07T20:38:33Z - EXIT_CODE - 0</tspan>
+<tspan x="10" y="1914">[MODE_BUILD=npmTest] - 2017-04-07T20:40:08Z - EXIT_CODE - 0</tspan>
 </text>
 </svg>
