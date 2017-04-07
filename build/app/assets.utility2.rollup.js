@@ -135,6 +135,7 @@
             }
             // search modulePathList
             [
+                ['node_modules'],
                 modulePathList,
                 require('module').globalPaths
             ].some(function (modulePathList) {
@@ -699,8 +700,8 @@ local.templateApidocMd = '\
                     ].some(function (name) {
                         tmp.skip = local.path.extname(file) !== '.js' ||
                             file.indexOf(options.packageJson.main) >= 0 ||
-                            new RegExp('(?:\\b|_)(?:archive|artifact|assets|' +
-                                'bin|bower_component|build|' +
+                            new RegExp('(?:\\b|_)(?:archive|artifact|asset|' +
+                                'bin|bower_components|build|' +
                                 'cli|coverage' +
                                 'doc|dist|' +
                                 'example|external|' +
@@ -711,7 +712,7 @@ local.templateApidocMd = '\
                                 'node_modules|' +
                                 'rollup|' +
                                 'test|tmp|' +
-                                'vendor)(?:\\b|_)').test(file.toLowerCase()) ||
+                                'vendor)s{0,1}(?:\\b|_)').test(file.toLowerCase()) ||
                             module[name];
                         return tmp.skip;
                     });
@@ -1111,7 +1112,7 @@ local.templateApidocMd = '\
             };
         };
 
-        local.onParallel = function (onError, onEach) {
+        local.onParallel = function (onError, onEach, onRetry) {
         /*
          * this function will create a function that will
          * 1. run async tasks in parallel
@@ -1120,7 +1121,11 @@ local.templateApidocMd = '\
             var onParallel;
             onError = local.onErrorWithStack(onError);
             onEach = onEach || local.nop;
-            onParallel = function (error) {
+            onRetry = onRetry || local.nop;
+            onParallel = function (error, data) {
+                if (onRetry(error, data)) {
+                    return;
+                }
                 // decrement counter
                 onParallel.counter -= 1;
                 // validate counter
@@ -1132,12 +1137,12 @@ local.templateApidocMd = '\
                 // handle error
                 if (error) {
                     onParallel.error = error;
-                    // ensure counter < 0
-                    onParallel.counter = -1;
+                    // ensure counter <= 0
+                    onParallel.counter = -Math.abs(onParallel.counter);
                 }
                 // call onError when done
                 if (onParallel.counter <= 0) {
-                    onError(error);
+                    onError(error, data);
                     return;
                 }
                 onEach();
@@ -2638,7 +2643,7 @@ local.templateApidocMd = '\
             return options;
         };
 
-        local.onParallel = function (onError, onEach) {
+        local.onParallel = function (onError, onEach, onRetry) {
         /*
          * this function will create a function that will
          * 1. run async tasks in parallel
@@ -2647,7 +2652,11 @@ local.templateApidocMd = '\
             var onParallel;
             onError = local.onErrorWithStack(onError);
             onEach = onEach || local.nop;
-            onParallel = function (error) {
+            onRetry = onRetry || local.nop;
+            onParallel = function (error, data) {
+                if (onRetry(error, data)) {
+                    return;
+                }
                 // decrement counter
                 onParallel.counter -= 1;
                 // validate counter
@@ -2659,12 +2668,12 @@ local.templateApidocMd = '\
                 // handle error
                 if (error) {
                     onParallel.error = error;
-                    // ensure counter < 0
-                    onParallel.counter = -1;
+                    // ensure counter <= 0
+                    onParallel.counter = -Math.abs(onParallel.counter);
                 }
                 // call onError when done
                 if (onParallel.counter <= 0) {
-                    onError(error);
+                    onError(error, data);
                     return;
                 }
                 onEach();
@@ -2673,6 +2682,59 @@ local.templateApidocMd = '\
             onParallel.counter = 0;
             // return callback
             return onParallel;
+        };
+
+        local.onParallelList = function (options, onEach, onError) {
+        /*
+         * this function will
+         * 1. async-run onEach in parallel,
+         *    with the given options.rateLimit and options.retryLimit
+         * 2. call onError when done
+         */
+            var ii, onEach2, onParallel;
+            onEach2 = function () {
+                while (ii + 1 < options.list.length && onParallel.counter < options.rateLimit) {
+                    ii += 1;
+                    onParallel.ii += 1;
+                    onParallel.remaining -= 1;
+                    onEach({
+                        element: options.list[ii],
+                        ii: ii,
+                        list: options.list,
+                        retry: 0
+                    }, onParallel);
+                }
+            };
+            onParallel = local.onParallel(onError, onEach2, function (error, data) {
+                if (error && data && data.retry < options.retryLimit) {
+                    local.onErrorDefault(error);
+                    data.retry += 1;
+                    setTimeout(function () {
+                        onParallel.counter -= 1;
+                        onEach(data, onParallel);
+                    }, 1000);
+                    return true;
+                }
+            });
+            onParallel.counter += 1;
+            ii = -1;
+            onParallel.ii = -1;
+            onParallel.remaining = options.list.length;
+            options.rateLimit = Number(options.rateLimit) || 4;
+            options.rateLimit = Math.max(options.rateLimit, 3);
+            options.retryLimit = Number(options.retryLimit) || 2;
+            onEach2();
+            onParallel();
+        };
+
+        local.onReadyAfter = function (onError) {
+        /*
+         * this function will call onError when onReadyBefore.counter === 0
+         */
+            local.onReadyBefore.counter += 1;
+            local.taskCreate({ key: 'utility2.onReadyAfter' }, null, onError);
+            local.onResetAfter(local.onReadyBefore);
+            return onError;
         };
     }());
     switch (local.modeJs) {
@@ -2686,7 +2748,6 @@ local.templateApidocMd = '\
          * this function will delete the github file
          * https://developer.github.com/v3/repos/contents/#delete-a-file
          */
-            var onParallel;
             options = { message: options.message, url: options.url };
             local.onNext(options, function (error, data) {
                 switch (options.modeNext) {
@@ -2706,17 +2767,14 @@ local.templateApidocMd = '\
                         return;
                     }
                     // delete tree
-                    onParallel = local.onParallel(options.onNext);
-                    onParallel.counter += 1;
-                    data.forEach(function (element) {
+                    local.onParallelList({ list: data }, function (data, onParallel) {
                         onParallel.counter += 1;
                         // recurse
                         local.contentDelete({
                             message: options.message,
-                            url: element.url
+                            url: data.element.url
                         }, onParallel);
-                    });
-                    onParallel();
+                    }, options.onNext);
                     break;
                 default:
                     onError();
@@ -2943,18 +3001,14 @@ local.templateApidocMd = '\
          * this function will touch options.urlList in parallel
          * https://developer.github.com/v3/repos/contents/#update-a-file
          */
-            var onParallel;
-            onParallel = local.onParallel(onError);
-            onParallel.counter += 1;
-            options.urlList.forEach(function (url) {
+            local.onParallelList({ list: options.urlList }, function (data, onParallel) {
                 onParallel.counter += 1;
                 local.contentTouch({
                     message: options.message,
                     modeErrorIgnore: true,
-                    url: url
+                    url: data.element
                 }, onParallel);
-            });
-            onParallel();
+            }, onError);
         };
         break;
     }
@@ -9733,9 +9787,9 @@ local.assetsDict['/assets.index.template.html'].replace((/\n/g), '\\n\\\n') +
                 local.assetsDict[\'/assets.index.template.html\'],\n\
                 {\n\
                     env: local.objectSetDefault(local.env, {\n\
-                        npm_package_description: \'example module\',\n\
-                        npm_package_name: \'example\',\n\
-                        npm_package_nameAlias: \'example\',\n\
+                        npm_package_description: \'the greatest app in the world!\',\n\
+                        npm_package_name: \'my-app\',\n\
+                        npm_package_nameAlias: \'my_app\',\n\
                         npm_package_version: \'0.0.1\'\n\
                     })\n\
                 }\n\
@@ -9747,11 +9801,11 @@ local.assetsDict['/assets.index.template.html'].replace((/\n/g), '\\n\\\n') +
                     String(match0);\n\
                     switch (match1) {\n\
                     case \'npm_package_description\':\n\
-                        return \'example module\';\n\
+                        return \'the greatest app in the world!\';\n\
                     case \'npm_package_name\':\n\
-                        return \'example\';\n\
+                        return \'my-app\';\n\
                     case \'npm_package_nameAlias\':\n\
-                        return \'example\';\n\
+                        return \'my_app\';\n\
                     case \'npm_package_version\':\n\
                         return \'0.0.1\';\n\
                     }\n\
@@ -9860,13 +9914,15 @@ local.assetsDict['/assets.lib.template.js'] = '\
 
 local.assetsDict['/assets.readme.template.md'] = '\
 # jslint-lite\n\
-example module\n\
+the greatest app in the world!\n\
 \n\
 [![travis-ci.org build-status](https://api.travis-ci.org/kaizhu256/node-jslint-lite.svg)](https://travis-ci.org/kaizhu256/node-jslint-lite) [![istanbul-coverage](https://kaizhu256.github.io/node-jslint-lite/build/coverage.badge.svg)](https://kaizhu256.github.io/node-jslint-lite/build/coverage.html/index.html)\n\
 \n\
 [![NPM](https://nodei.co/npm/jslint-lite.png?downloads=true)](https://www.npmjs.com/package/jslint-lite)\n\
 \n\
-[![package-listing](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.npmPackageListing.svg)](https://github.com/kaizhu256/node-jslint-lite)\n\
+[![npmPackageListing](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.npmPackageListing.svg)](https://github.com/kaizhu256/node-jslint-lite)\n\
+\n\
+![npmPackageDependencyTree](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.npmPackageDependencyTree.svg)\n\
 \n\
 \n\
 \n\
@@ -9878,7 +9934,7 @@ example module\n\
 # live demo\n\
 - [https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
 \n\
-[![github.com test-server](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.deployGithub.browser._2Fnode-jslint-lite_2Fbuild_2Fapp_2Findex.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
+[![github.com test-server](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.deployGithub.browser.%2Fnode-jslint-lite%2Fbuild%2Fapp%2Findex.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
 \n\
 \n\
 \n\
@@ -9886,7 +9942,7 @@ example module\n\
 #### apidoc\n\
 - [https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
 \n\
-[![apidoc](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.buildApidoc.browser._2Fhome_2Ftravis_2Fbuild_2Fkaizhu256_2Fnode-jslint-lite_2Ftmp_2Fbuild_2Fapidoc.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
+[![apidoc](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.buildApidoc.browser.%2Fhome%2Ftravis%2Fbuild%2Fkaizhu256%2Fnode-jslint-lite%2Ftmp%2Fbuild%2Fapidoc.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
 \n\
 #### todo\n\
 - none\n\
@@ -9926,17 +9982,17 @@ example module\n\
 \n\
 \n\
 # quickstart web example\n\
-![screen-capture](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.testExampleJs.browser..png)\n\
+![screenCapture](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.testExampleJs.browser..png)\n\
 \n\
 #### to run this example, follow the instruction in the script below\n\
 - [example.js](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/example.js)\n\
 ```javascript\n' + local.assetsDict['/assets.example.template.js'] + '```\n\
 \n\
 #### output from browser\n\
-![screen-capture](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.testExampleJs.browser..png)\n\
+![screenCapture](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.testExampleJs.browser..png)\n\
 \n\
 #### output from shell\n\
-![screen-capture](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.testExampleJs.svg)\n\
+![screenCapture](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.testExampleJs.svg)\n\
 \n\
 \n\
 \n\
@@ -9944,7 +10000,7 @@ example module\n\
 ```json\n\
 {\n\
     "author": "kai zhu <kaizhu256@gmail.com>",\n\
-    "description": "example module",\n\
+    "description": "the greatest app in the world!",\n\
     "devDependencies": {\n\
         "electron-lite": "kaizhu256/node-electron-lite#alpha",\n\
         "utility2": "kaizhu256/node-utility2#alpha"\n\
@@ -9980,7 +10036,7 @@ example module\n\
 \n\
 \n\
 # changelog of last 50 commits\n\
-[![screen-capture](https://kaizhu256.github.io/node-jslint-lite/build/screen-capture.gitLog.svg)](https://github.com/kaizhu256/node-jslint-lite/commits)\n\
+[![screenCapture](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.gitLog.svg)](https://github.com/kaizhu256/node-jslint-lite/commits)\n\
 \n\
 \n\
 \n\
@@ -10516,14 +10572,14 @@ local.assetsDict['/favicon.ico'] = '';
             boundary = '--' + Date.now().toString(16) + Math.random().toString(16);
             // init result
             result = [];
-            local.listForEachAsync(this.entryList, function (element, ii, list, onParallel) {
+            local.onParallelList({
+                list: this.entryList
+            }, function (options, onParallel) {
                 var value;
-                // jslint-hack
-                local.nop(list);
-                value = element.value;
+                value = options.element.value;
                 if (!(value instanceof local.Blob)) {
-                    result[ii] = [boundary +
-                        '\r\nContent-Disposition: form-data; name="' + element.name +
+                    result[options.ii] = [boundary +
+                        '\r\nContent-Disposition: form-data; name="' + options.element.name +
                         '"\r\n\r\n', value, '\r\n'];
                     onParallel.counter += 1;
                     onParallel();
@@ -10532,8 +10588,9 @@ local.assetsDict['/favicon.ico'] = '';
                 // read from blob in parallel
                 onParallel.counter += 1;
                 local.blobRead(value, 'binary', function (error, data) {
-                    result[ii] = !error && [boundary +
-                        '\r\nContent-Disposition: form-data; name="' + element.name + '"' +
+                    result[options.ii] = !error && [boundary +
+                        '\r\nContent-Disposition: form-data; name="' + options.element.name +
+                        '"' +
                         // read param filename
                         (value && value.name
                             ? '; filename="' + value.name + '"'
@@ -11402,24 +11459,28 @@ local.assetsDict['/favicon.ico'] = '';
                     if (!(/^\w+:\/\//).test(options.url)) {
                         options.url = local.path.resolve(process.cwd(), options.url);
                     }
-                    options.testName = local.env.MODE_BUILD + '.browser.' +
-                        encodeURIComponent(local.urlParse(options.url).pathname
-                            .replace(
-                                '/build..' + local.env.CI_BRANCH + '..' + local.env.CI_HOST,
-                                '/build'
-                            ));
+                    options.urlParsed = local.urlParse(options.url);
+                    options.testName = options.urlParsed.pathname;
+                    if (local.env.npm_config_modeBrowserTestHostInclude) {
+                        options.testName = options.urlParsed.host + options.testName;
+                    }
+                    options.testName = options.testName.replace(
+                        '/build..' + local.env.CI_BRANCH + '..' + local.env.CI_HOST,
+                        '/build'
+                    );
+                    if ((/^https{0,1}:\/\//).test(options.url)) {
+                        options.testName = encodeURIComponent(options.testName);
+                    }
                     local.objectSetDefault(options, {
                         fileCoverage: local.env.npm_config_dir_tmp +
                             '/coverage.' + options.testName + '.json',
                         fileScreenCapture: (local.env.npm_config_dir_build +
-                            '/screen-capture.' + options.testName + '.png')
-                            .replace((/%/g), '_')
-                            .replace((/_2F\.png$/), '.png'),
+                            '/screenCapture.' + options.testName + '.png'),
                         fileTestReport: local.env.npm_config_dir_tmp +
                             '/test-report.' + options.testName + '.json',
                         modeBrowserTest: 'test',
                         timeExit: Date.now() + options.timeoutDefault,
-                        timeoutScreenCapture: Number(options.timeoutScreenCapture || 10000)
+                        timeoutScreenCapture: Number(options.timeoutScreenCapture || 15000)
                     }, 1);
                     // init timerTimeout
                     timerTimeout = local.onTimeout(
@@ -11556,14 +11617,14 @@ local.assetsDict['/favicon.ico'] = '';
                     setTimeout(function () {
                         options.browserWindow.capturePage(options, function (data) {
                             local.fs.writeFileSync(options.fileScreenCapture, data.toPng());
-                            console.error('\nbrowserTest - created screen-capture file://' +
+                            console.error('\nbrowserTest - created screenCapture file://' +
                                 options.fileScreenCapture + '\n');
                             onParallel();
                         });
                     }, options.timeoutScreenCapture);
                     break;
                 case 14:
-                    console.error('browserTest - created screen-capture file://' +
+                    console.error('browserTest - created screenCapture file://' +
                         options.fileScreenCapture.replace((/\.\w+$/), '.html'));
                     onNext();
                     break;
@@ -11598,7 +11659,7 @@ local.assetsDict['/favicon.ico'] = '';
                         options.global_test_results =
                             JSON.parse(data.tmp[2]).global_test_results;
                         if (options.global_test_results.testReport) {
-                            // merge screen-capture into test-report
+                            // merge screenCapture into test-report
                             options.global_test_results.testReport.testPlatformList[0]
                                 .screenCaptureImg =
                                 options.fileScreenCapture.replace((/.*\//), '');
@@ -11819,7 +11880,7 @@ return Utf8ArrayToStr(bff);
          */
             var writeFileSync;
             local.fsRmrSync(local.env.npm_config_dir_build + '/app');
-            local.listForEachAsync(options.concat([{
+            local.onParallelList({ list: options.concat([{
                 file: '/assets.' + local.env.npm_package_nameAlias + '.js',
                 url: '/assets.' + local.env.npm_package_nameAlias + '.js'
             }, {
@@ -11843,8 +11904,8 @@ return Utf8ArrayToStr(bff);
             }, {
                 file: '/jsonp.utility2._stateInit',
                 url: '/jsonp.utility2._stateInit?callback=window.utility2._stateInit'
-            }]), function (options, ii, list, onParallel) {
-                options = list[ii];
+            }]) }, function (options, onParallel) {
+                options = options.element;
                 onParallel.counter += 1;
                 local.ajax(options, function (error, xhr) {
                     // validate no error occurred
@@ -11936,8 +11997,21 @@ return Utf8ArrayToStr(bff);
         /*
          * this function will build the npmdoc
          */
-            var onParallel, packageJson;
-            onParallel = local.utility2.onParallel(onError);
+            var done, onError2, onParallel, packageJson;
+            // ensure exit after 5 minutes
+            setTimeout(process.exit, 5 * 60 * 1000);
+            onError2 = function (error) {
+                local.onErrorDefault(error);
+                if (done) {
+                    return;
+                }
+                done = true;
+                // try to recover from error
+                setTimeout(onError, error && local.timeoutDefault);
+            };
+            // try to salvage uncaughtException
+            process.on('uncaughtException', onError2);
+            onParallel = local.utility2.onParallel(onError2);
             onParallel.counter += 1;
             // build package.json
             packageJson = JSON.parse(local.fs.readFileSync('package.json', 'utf8'));
@@ -11987,10 +12061,13 @@ header: '\
 [![NPM](https://nodei.co/npm/{{env.npm_package_name}}.png?downloads=true)](https://www.npmjs.com/package/{{env.npm_package_name}}) \
 \n\
 \n\
-[![apidoc](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screen-capture.buildNpmdoc.browser._2Fhome_2Ftravis_2Fbuild_2Fnpmdoc_2Fnode-npmdoc-{{env.npm_package_name}}_2Ftmp_2Fbuild_2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build..beta..travis-ci.org/apidoc.html) \
+[![apidoc](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.buildNpmdoc.browser.%2Fhome%2Ftravis%2Fbuild%2Fnpmdoc%2Fnode-npmdoc-{{env.npm_package_name}}%2Ftmp%2Fbuild%2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/apidoc.html) \
 \n\
 \n\
-![package-listing](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screen-capture.npmPackageListing.svg) \
+![npmPackageListing](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.npmPackageListing.svg) \
+\n\
+\n\
+![npmPackageDependencyTree](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.npmPackageDependencyTree.svg) \
 \n\
 \n\
 \n\
@@ -12231,7 +12308,7 @@ header: '\
          * this function will update dbTableTravisRepo with active, public repos
          */
             var dbRowList, self;
-            options = local.objectSetDefault(options, { queryLimit: 500, rateLimit: 10 });
+            options = local.objectSetDefault(options, { queryLimit: 100 });
             local.onNext(options, function (error, data) {
                 switch (options.modeNext) {
                 case 1:
@@ -12266,18 +12343,23 @@ header: '\
                     dbRowList = local.dbTableTravisRepoCrudGetManyByQuery({
                         limit: options.queryLimit
                     });
-                    local.listForEachAsync(dbRowList, function (dbRow, ii, list, onParallel) {
-                        dbRow = list[ii];
+                    local.onParallelList({
+                        list: dbRowList,
+                        rateLimit: options.rateLimit
+                    }, function (dbRow, onParallel) {
+                        dbRow = dbRow.element;
                         onParallel.counter += 1;
                         local.ajax({
-                            headers: {
-                                Authorization: 'token ' + local.env.TRAVIS_ACCESS_TOKEN
-                            },
                             url: 'https://api.travis-ci.org/repos/' + dbRow.githubRepo
                         }, function (error, data) {
                             // validate no error occurred
                             local.assert(!error, error);
-                            local.objectSetOverride(dbRow, JSON.parse(data.responseText));
+                            data = JSON.parse(data.responseText);
+                            Object.keys(data).forEach(function (key) {
+                                if (data[key] !== null) {
+                                    dbRow[key] = data[key];
+                                }
+                            });
                             // ignore extraneous data to save space
                             dbRow.description = null;
                             dbRow.last_build_duration = null;
@@ -12297,14 +12379,15 @@ header: '\
                             }
                             onParallel();
                         });
-                    }, options.onNext, options.rateLimit);
+                    }, options.onNext);
                     break;
                 case 4:
                     self.crudSetManyById(dbRowList);
                     self.save(options.onNext);
                     break;
                 default:
-                    local.setTimeoutOnError(onError, error, self);
+                    local.onErrorDefault(error);
+                    local.setTimeoutOnError(onError, null, self);
                 }
             });
             options.modeNext = 0;
@@ -12739,32 +12822,6 @@ header: '\
             });
         };
 
-        local.listForEachAsync = function (list, onEach, onError, rateLimit) {
-        /*
-         * this function will
-         * 1. async-run onEach(element, ii, list, onParallel) with the given rateLimit
-         * 2. call onError when done
-         */
-            var ii, onEach2, onParallel;
-            onEach2 = function () {
-                while (ii + 1 < list.length && onParallel.counter < rateLimit) {
-                    ii += 1;
-                    onParallel.ii += 1;
-                    onParallel.remaining -= 1;
-                    onEach(list[ii], ii, list, onParallel);
-                }
-            };
-            onParallel = local.onParallel(onError, onEach2);
-            onParallel.counter += 1;
-            ii = -1;
-            onParallel.ii = -1;
-            onParallel.remaining = list.length;
-            rateLimit = Number(rateLimit) || 4;
-            rateLimit = Math.max(rateLimit, 2);
-            onEach2();
-            onParallel();
-        };
-
         local.listGetElementRandom = function (list) {
         /*
          * this function will return a random element from the list
@@ -13091,6 +13148,7 @@ header: '\
             }
             // search modulePathList
             [
+                ['node_modules'],
                 modulePathList,
                 require('module').globalPaths
             ].some(function (modulePathList) {
@@ -13349,7 +13407,7 @@ header: '\
             return options;
         };
 
-        local.onParallel = function (onError, onEach) {
+        local.onParallel = function (onError, onEach, onRetry) {
         /*
          * this function will create a function that will
          * 1. run async tasks in parallel
@@ -13358,7 +13416,11 @@ header: '\
             var onParallel;
             onError = local.onErrorWithStack(onError);
             onEach = onEach || local.nop;
-            onParallel = function (error) {
+            onRetry = onRetry || local.nop;
+            onParallel = function (error, data) {
+                if (onRetry(error, data)) {
+                    return;
+                }
                 // decrement counter
                 onParallel.counter -= 1;
                 // validate counter
@@ -13370,12 +13432,12 @@ header: '\
                 // handle error
                 if (error) {
                     onParallel.error = error;
-                    // ensure counter < 0
-                    onParallel.counter = -1;
+                    // ensure counter <= 0
+                    onParallel.counter = -Math.abs(onParallel.counter);
                 }
                 // call onError when done
                 if (onParallel.counter <= 0) {
-                    onError(error);
+                    onError(error, data);
                     return;
                 }
                 onEach();
@@ -13384,6 +13446,49 @@ header: '\
             onParallel.counter = 0;
             // return callback
             return onParallel;
+        };
+
+        local.onParallelList = function (options, onEach, onError) {
+        /*
+         * this function will
+         * 1. async-run onEach in parallel,
+         *    with the given options.rateLimit and options.retryLimit
+         * 2. call onError when done
+         */
+            var ii, onEach2, onParallel;
+            onEach2 = function () {
+                while (ii + 1 < options.list.length && onParallel.counter < options.rateLimit) {
+                    ii += 1;
+                    onParallel.ii += 1;
+                    onParallel.remaining -= 1;
+                    onEach({
+                        element: options.list[ii],
+                        ii: ii,
+                        list: options.list,
+                        retry: 0
+                    }, onParallel);
+                }
+            };
+            onParallel = local.onParallel(onError, onEach2, function (error, data) {
+                if (error && data && data.retry < options.retryLimit) {
+                    local.onErrorDefault(error);
+                    data.retry += 1;
+                    setTimeout(function () {
+                        onParallel.counter -= 1;
+                        onEach(data, onParallel);
+                    }, 1000);
+                    return true;
+                }
+            });
+            onParallel.counter += 1;
+            ii = -1;
+            onParallel.ii = -1;
+            onParallel.remaining = options.list.length;
+            options.rateLimit = Number(options.rateLimit) || 4;
+            options.rateLimit = Math.max(options.rateLimit, 3);
+            options.retryLimit = Number(options.retryLimit) || 2;
+            onEach2();
+            onParallel();
         };
 
         local.onReadyAfter = function (onError) {
@@ -14291,8 +14396,8 @@ instruction\n\
                 options.githubRepo.join('/')
             );
             template = template.replace(
-                (/kaizhu256_2Fnode-jslint-lite/g),
-                options.githubRepo.join('_2F')
+                (/kaizhu256%2Fnode-jslint-lite/g),
+                options.githubRepo.join('%2F')
             );
             template = template.replace(
                 (/node-jslint-lite/g),
@@ -14683,12 +14788,9 @@ instruction\n\
             }, 1000);
             // shallow-copy testPlatform.testCaseList to prevent side-effects
             // from in-place sort from testReportMerge
-            local.listForEachAsync(testPlatform.testCaseList.slice(), function (
-                testCase,
-                ii,
-                list,
-                onParallel
-            ) {
+            local.onParallelList({
+                list: testPlatform.testCaseList.slice()
+            }, function (testCase, onParallel) {
                 var onError, timerTimeout;
                 onError = function (error) {
                     // cleanup timerTimeout
@@ -14729,7 +14831,7 @@ instruction\n\
                     // if all tests are done, then create test-report
                     onParallel();
                 };
-                testCase = list[ii];
+                testCase = testCase.element;
                 // init timerTimeout
                 timerTimeout = local.onTimeout(onError, local.timeoutDefault, testCase.name);
                 // increment number of tests remaining
@@ -15022,9 +15124,9 @@ instruction\n\
             npm_package_nameAlias: (local.env.npm_package_name || '').replace((/\W/g), '_')
         });
         local.objectSetDefault(local.env, {
-            npm_package_description: 'example module',
-            npm_package_name: 'example',
-            npm_package_nameAlias: 'example',
+            npm_package_description: 'the greatest app in the world!',
+            npm_package_name: 'my-app',
+            npm_package_nameAlias: 'my_app',
             npm_package_version: '0.0.1'
         });
         local.errorDefault = new Error('default error');
@@ -15297,27 +15399,25 @@ instruction\n\
         case 'dbTableTravisRepoUpdate':
             local.dbTableTravisRepoUpdate(JSON.parse(process.argv[3] || '{}'), local.exit);
             return;
-        case 'listForEachAsyncSpawn':
-            local.listForEachAsync(
-                process.argv[3].split('\n').filter(function (element) {
+        case 'onParallelListSpawn':
+            local.onParallelList({
+                list: process.argv[3].split('\n').filter(function (element) {
                     return element.trim();
                 }),
-                function (element, ii, list, onParallel) {
-                    element = list[ii];
-                    onParallel.counter += 1;
-                    local.child_process.spawn(
-                        '/bin/sh',
-                        ['-c', '. ' + local.__dirname + '/lib.utility2.sh; ' + element],
-                        { stdio: ['ignore', 1, 2] }
-                    ).on('exit', function (exitCode) {
-                        console.error('listForEachAsyncSpawn - [' + (onParallel.ii + 1) +
-                            ' of ' + list.length + '] exitCode ' + exitCode);
-                        onParallel(exitCode && new Error(exitCode));
-                    });
-                },
-                local.exit,
-                process.argv[4]
-            );
+                rateLimit: process.argv[4],
+                retryLimit: process.argv[5]
+            }, function (options, onParallel) {
+                onParallel.counter += 1;
+                local.child_process.spawn(
+                    '/bin/sh',
+                    ['-c', '. ' + local.__dirname + '/lib.utility2.sh; ' + options.element],
+                    { stdio: ['ignore', 1, 2] }
+                ).on('exit', function (exitCode) {
+                    console.error('onParallelListSpawn - [' + (onParallel.ii + 1) +
+                        ' of ' + options.list.length + '] exitCode ' + exitCode);
+                    onParallel(exitCode && new Error(exitCode), options);
+                });
+            }, local.exit);
             return;
         }
         // init lib
