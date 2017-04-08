@@ -9934,7 +9934,7 @@ the greatest app in the world!\n\
 # live demo\n\
 - [https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
 \n\
-[![github.com test-server](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.deployGithub.browser.%2Fnode-jslint-lite%2Fbuild%2Fapp%2Findex.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
+[![github.com test-server](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.deployGithub.browser.%252Fnode-jslint-lite%252Fbuild%252Fapp%252Findex.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/app/index.html)\n\
 \n\
 \n\
 \n\
@@ -9942,7 +9942,7 @@ the greatest app in the world!\n\
 #### apidoc\n\
 - [https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
 \n\
-[![apidoc](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.buildApidoc.browser.%2Fhome%2Ftravis%2Fbuild%2Fkaizhu256%2Fnode-jslint-lite%2Ftmp%2Fbuild%2Fapidoc.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
+[![apidoc](https://kaizhu256.github.io/node-jslint-lite/build/screenCapture.buildApidoc.browser.%252Fhome%252Ftravis%252Fbuild%252Fkaizhu256%252Fnode-jslint-lite%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://kaizhu256.github.io/node-jslint-lite/build..beta..travis-ci.org/apidoc.html)\n\
 \n\
 #### todo\n\
 - none\n\
@@ -10019,7 +10019,7 @@ the greatest app in the world!\n\
     ],\n\
     "repository": {\n\
         "type": "git",\n\
-        "url": "https://github.com/kaizhu256/node-jslint-lite.git"\n\
+        "url": "https://github.com/kaizhu256/node-jslint-lite"\n\
     },\n\
     "scripts": {\n\
         "build-ci": "utility2 shReadmeTest build_ci.sh",\n\
@@ -11464,13 +11464,12 @@ local.assetsDict['/favicon.ico'] = '';
                     if (local.env.npm_config_modeBrowserTestHostInclude) {
                         options.testName = options.urlParsed.host + options.testName;
                     }
-                    options.testName = options.testName.replace(
-                        '/build..' + local.env.CI_BRANCH + '..' + local.env.CI_HOST,
-                        '/build'
-                    );
-                    if ((/^https{0,1}:\/\//).test(options.url)) {
-                        options.testName = encodeURIComponent(options.testName);
-                    }
+                    options.testName = local.env.MODE_BUILD + '.browser.' +
+                        encodeURIComponent(options.testName
+                            .replace(
+                                '/build..' + local.env.CI_BRANCH + '..' + local.env.CI_HOST,
+                                '/build'
+                            ));
                     local.objectSetDefault(options, {
                         fileCoverage: local.env.npm_config_dir_tmp +
                             '/coverage.' + options.testName + '.json',
@@ -12022,7 +12021,7 @@ return Utf8ArrayToStr(bff);
                 repository: {
                     type: 'git',
                     url: 'https://github.com/npmdoc/node-npmdoc-' +
-                        local.env.npm_package_buildNpmdoc + '.git'
+                        local.env.npm_package_buildNpmdoc
                 }
             }), 2);
             local.objectSetOverride(packageJson, local.objectLiteralize({
@@ -12061,7 +12060,7 @@ header: '\
 [![NPM](https://nodei.co/npm/{{env.npm_package_name}}.png?downloads=true)](https://www.npmjs.com/package/{{env.npm_package_name}}) \
 \n\
 \n\
-[![apidoc](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.buildNpmdoc.browser.%2Fhome%2Ftravis%2Fbuild%2Fnpmdoc%2Fnode-npmdoc-{{env.npm_package_name}}%2Ftmp%2Fbuild%2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/apidoc.html) \
+[![apidoc](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.buildNpmdoc.browser.%252Fhome%252Ftravis%252Fbuild%252Fnpmdoc%252Fnode-npmdoc-{{env.npm_package_name}}%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/apidoc.html) \
 \n\
 \n\
 ![npmPackageListing](https://npmdoc.github.io/node-npmdoc-{{env.npm_package_name}}/build/screenCapture.npmPackageListing.svg) \
@@ -14382,8 +14381,10 @@ instruction\n\
                 JSON.parse(local.fs.readFileSync('package.json', 'utf8'));
             local.objectSetDefault(options.packageJson, {
                 nameAlias: options.packageJson.name.replace((/\W/g), '_'),
-                repository: { url: 'https://github.com/kaizhu256/node-' +
-                    options.packageJson.name + '.git' }
+                repository: {
+                    type: 'git',
+                    url: 'https://github.com/kaizhu256/node-' + options.packageJson.name
+                }
             }, 2);
             options.githubRepo = options.packageJson.repository.url.split('/').slice(-2);
             options.githubRepo[1] = options.githubRepo[1].replace((/\.git$/), '');
@@ -14396,8 +14397,8 @@ instruction\n\
                 options.githubRepo.join('/')
             );
             template = template.replace(
-                (/kaizhu256%2Fnode-jslint-lite/g),
-                options.githubRepo.join('%2F')
+                (/kaizhu256%252Fnode-jslint-lite/g),
+                options.githubRepo.join('%252F')
             );
             template = template.replace(
                 (/node-jslint-lite/g),
@@ -15147,7 +15148,7 @@ instruction\n\
             "nameOriginal": "npmdoc-mysql",
             "repository": {
                 "type": "git",
-                "url": "https://github.com/npmdoc/node-npmdoc-mysql.git"
+                "url": "https://github.com/npmdoc/node-npmdoc-mysql"
             },
             "scripts": {
                 "build-ci": "utility2 shReadmeTest build_ci.sh"
