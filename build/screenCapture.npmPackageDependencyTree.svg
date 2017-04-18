@@ -50,7 +50,7 @@
 <tspan x="10" y="762">  │   └── slide@1.1.6 </tspan>
 <tspan x="10" y="778">  ├── is-npm@1.0.0 </tspan>
 <tspan x="10" y="794">  ├─┬ latest-version@3.1.0 </tspan>
-<tspan x="10" y="810">  │ └─┬ package-json@4.0.0 </tspan>
+<tspan x="10" y="810">  │ └─┬ package-json@4.0.1 </tspan>
 <tspan x="10" y="826">  │   ├─┬ got@6.7.1 </tspan>
 <tspan x="10" y="842">  │   │ ├─┬ create-error-class@3.0.2 </tspan>
 <tspan x="10" y="858">  │   │ │ └── capture-stack-trace@1.0.0 </tspan>
