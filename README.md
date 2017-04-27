@@ -1,6 +1,6 @@
 # npmdoc-update-notifier
 
-#### api documentation for  [update-notifier (v2.1.0)](https://github.com/yeoman/update-notifier#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-update-notifier.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-update-notifier) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-update-notifier.svg)](https://travis-ci.org/npmdoc/node-npmdoc-update-notifier)
+#### basic api documentation for  [update-notifier (v2.1.0)](https://github.com/yeoman/update-notifier#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-update-notifier.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-update-notifier) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-update-notifier.svg)](https://travis-ci.org/npmdoc/node-npmdoc-update-notifier)
 
 #### Update notifications for your CLI app
 
@@ -103,7 +103,8 @@
     "scripts": {
         "test": "xo && mocha --timeout 20000"
     },
-    "version": "2.1.0"
+    "version": "2.1.0",
+    "bin": {}
 }
 ```
 
