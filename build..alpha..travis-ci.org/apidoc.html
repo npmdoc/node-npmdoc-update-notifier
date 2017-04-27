@@ -79,6 +79,37 @@
 
         </li>
 
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.update-notifier.index">
+            function <span class="apidocSignatureSpan">update-notifier.</span>index
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.update-notifier.index">module update-notifier.index</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.update-notifier.index.index">
+            function <span class="apidocSignatureSpan">update-notifier.</span>index
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.update-notifier.index.UpdateNotifier">
+            function <span class="apidocSignatureSpan">update-notifier.index.</span>UpdateNotifier
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
     </ol></li>
 
 </ol></div>
@@ -237,7 +268,216 @@ to update&#x27;;
 		return this;
 	}
 }</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+/* eslint-disable unicorn/no-process-exit */
+&#x27;use strict&#x27;;
+let updateNotifier = require(&#x27;.&#x27;);
+
+const options = JSON.parse(process.argv[2]);
+
+updateNotifier = new updateNotifier.<span class="apidocCodeKeywordSpan">UpdateNotifier</span>(options);
+
+updateNotifier.checkNpm().then(update =&#x3e; {
+	// Only update the last update check time on success
+	updateNotifier.config.set(&#x27;lastUpdateCheck&#x27;, Date.now());
+
+	if (update.type &#x26;&#x26; update.type !== &#x27;latest&#x27;) {
+		updateNotifier.config.set(&#x27;update&#x27;, update);
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.update-notifier.index" id="apidoc.element.update-notifier.index">
+        function <span class="apidocSignatureSpan">update-notifier.</span>index
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">options =&#x3e; {
+	const updateNotifier = new UpdateNotifier(options);
+	updateNotifier.check();
+	return updateNotifier;
+}</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.update-notifier.index" id="apidoc.module.update-notifier.index">module update-notifier.index</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.update-notifier.index.index" id="apidoc.element.update-notifier.index.index">
+        function <span class="apidocSignatureSpan">update-notifier.</span>index
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">options =&#x3e; {
+	const updateNotifier = new UpdateNotifier(options);
+	updateNotifier.check();
+	return updateNotifier;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.update-notifier.index.UpdateNotifier" id="apidoc.element.update-notifier.index.UpdateNotifier">
+        function <span class="apidocSignatureSpan">update-notifier.index.</span>UpdateNotifier
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">class UpdateNotifier {
+	constructor(options) {
+		this.options = options = options || {};
+		options.pkg = options.pkg || {};
+
+		// Reduce pkg to the essential keys. with fallback to deprecated options
+		// TODO: Remove deprecated options at some point far into the future
+		options.pkg = {
+			name: options.pkg.name || options.packageName,
+			version: options.pkg.version || options.packageVersion
+		};
+
+		if (!options.pkg.name || !options.pkg.version) {
+			throw new Error(&#x27;pkg.name and pkg.version required&#x27;);
+		}
+
+		this.packageName = options.pkg.name;
+		this.packageVersion = options.pkg.version;
+		this.updateCheckInterval = typeof options.updateCheckInterval === &#x27;number&#x27; ? options.updateCheckInterval : ONE_DAY;
+		this.hasCallback = typeof options.callback === &#x27;function&#x27;;
+		this.callback = options.callback || (() =&#x3e; {});
+
+		if (!this.hasCallback) {
+			try {
+				const ConfigStore = configstore();
+				this.config = new ConfigStore(`update-notifier-${this.packageName}`, {
+					optOut: false,
+					// Init with the current time so the first check is only
+					// after the set interval, so not to bother users right away
+					lastUpdateCheck: Date.now()
+				});
+			} catch (err) {
+				// Expecting error code EACCES or EPERM
+				const msg =
+					chalk().yellow(format(&#x27; %s update check failed &#x27;, options.pkg.name)) +
+					format(&#x27;\n Try running with %s or get access &#x27;, chalk().cyan(&#x27;sudo&#x27;)) +
+					&#x27;\n to the local update config store via \n&#x27; +
+					chalk().cyan(format(&#x27; sudo chown -R $USER:$(id -gn $USER) %s &#x27;, xdgBasedir().config));
+
+				process.on(&#x27;exit&#x27;, () =&#x3e; {
+					console.error(&#x27;\n&#x27; + boxen()(msg, {align: &#x27;center&#x27;}));
+				});
+			}
+		}
+	}
+	check() {
+		if (this.hasCallback) {
+			this.checkNpm()
+				.then(update =&#x3e; this.callback(null, update))
+				.catch(err =&#x3e; this.callback(err));
+			return;
+		}
+
+		if (
+			!this.config ||
+			this.config.get(&#x27;optOut&#x27;) ||
+			&#x27;NO_UPDATE_NOTIFIER&#x27; in process.env ||
+			process.argv.indexOf(&#x27;--no-update-notifier&#x27;) !== -1
+		) {
+			return;
+		}
+
+		this.update = this.config.get(&#x27;update&#x27;);
+
+		if (this.update) {
+			this.config.delete(&#x27;update&#x27;);
+		}
+
+		// Only check for updates on a set interval
+		if (Date.now() - this.config.get(&#x27;lastUpdateCheck&#x27;) &#x3c; this.updateCheckInterval) {
+			return;
+		}
+
+		// Spawn a detached process, passing the options as an environment property
+		spawn(process.execPath, [path.join(__dirname, &#x27;check.js&#x27;), JSON.stringify(this.options)], {
+			detached: true,
+			stdio: &#x27;ignore&#x27;
+		}).unref();
+	}
+	checkNpm() {
+		return latestVersion()(this.packageName).then(latestVersion =&#x3e; {
+			return {
+				latest: latestVersion,
+				current: this.packageVersion,
+				type: semverDiff()(this.packageVersion, latestVersion) || &#x27;latest&#x27;,
+				name: this.packageName
+			};
+		});
+	}
+	notify(opts) {
+		if (!process.stdout.isTTY || isNpm() || !this.update) {
+			return this;
+		}
+
+		opts = Object.assign({isGlobal: true}, opts);
+
+		opts.message = opts.message || &#x27;Update available &#x27; + chalk().dim(this.update.current) + chalk().reset(&#x27; → &#x27;) +
+			chalk().green(this.update.latest) + &#x27; \nRun &#x27; + chalk().cyan(&#x27;npm i &#x27; + (opts.isGlobal ? &#x27;-g &#x27; : &#x27;&#x27;) + this.packageName) + &#x27;
+to update&#x27;;
+
+		opts.boxenOpts = opts.boxenOpts || {
+			padding: 1,
+			margin: 1,
+			align: &#x27;center&#x27;,
+			borderColor: &#x27;yellow&#x27;,
+			borderStyle: &#x27;round&#x27;
+		};
+
+		const message = &#x27;\n&#x27; + boxen()(opts.message, opts.boxenOpts);
+
+		if (opts.defer === false) {
+			console.error(message);
+		} else {
+			process.on(&#x27;exit&#x27;, () =&#x3e; {
+				console.error(message);
+			});
+
+			process.on(&#x27;SIGINT&#x27;, () =&#x3e; {
+				console.error(&#x27;&#x27;);
+				process.exit();
+			});
+		}
+
+		return this;
+	}
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+/* eslint-disable unicorn/no-process-exit */
+&#x27;use strict&#x27;;
+let updateNotifier = require(&#x27;.&#x27;);
+
+const options = JSON.parse(process.argv[2]);
+
+updateNotifier = new updateNotifier.<span class="apidocCodeKeywordSpan">UpdateNotifier</span>(options);
+
+updateNotifier.checkNpm().then(update =&#x3e; {
+	// Only update the last update check time on success
+	updateNotifier.config.set(&#x27;lastUpdateCheck&#x27;, Date.now());
+
+	if (update.type &#x26;&#x26; update.type !== &#x27;latest&#x27;) {
+		updateNotifier.config.set(&#x27;update&#x27;, update);
+...</pre></li>
     </ul>
 
 

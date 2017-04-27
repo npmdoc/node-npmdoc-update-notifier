@@ -45,7 +45,7 @@
 <tspan x="10" y="682">  │ │ └── minimist@0.0.8 </tspan>
 <tspan x="10" y="698">  │ ├─┬ unique-string@1.0.0 </tspan>
 <tspan x="10" y="714">  │ │ └── crypto-random-string@1.0.0 </tspan>
-<tspan x="10" y="730">  │ └─┬ write-file-atomic@1.3.1 </tspan>
+<tspan x="10" y="730">  │ └─┬ write-file-atomic@1.3.4 </tspan>
 <tspan x="10" y="746">  │   ├── imurmurhash@0.1.4 </tspan>
 <tspan x="10" y="762">  │   └── slide@1.1.6 </tspan>
 <tspan x="10" y="778">  ├── is-npm@1.0.0 </tspan>
@@ -64,7 +64,7 @@
 <tspan x="10" y="986">  │   │ ├── unzip-response@2.0.1 </tspan>
 <tspan x="10" y="1002">  │   │ └─┬ url-parse-lax@1.0.0 </tspan>
 <tspan x="10" y="1018">  │   │   └── prepend-http@1.0.4 </tspan>
-<tspan x="10" y="1034">  │   ├─┬ registry-auth-token@3.1.2 </tspan>
+<tspan x="10" y="1034">  │   ├─┬ registry-auth-token@3.3.0 </tspan>
 <tspan x="10" y="1050">  │   │ └─┬ rc@1.2.1 </tspan>
 <tspan x="10" y="1066">  │   │   ├── deep-extend@0.4.1 </tspan>
 <tspan x="10" y="1082">  │   │   ├── ini@1.3.4 </tspan>
